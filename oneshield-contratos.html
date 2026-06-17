@@ -523,12 +523,6 @@ class SignaturePad{
     this.ctx.clearRect(0,0,rect.width,rect.height);
     this.empty = true;
   }
-  recalibrate(){
-    // chame isso depois que o canvas voltar a ficar visível na tela —
-    // se ele estava escondido (display:none) quando foi criado, o tamanho
-    // do desenho ficou zerado e nada aparecia ao assinar.
-    this._setup(true);
-  }
   isEmpty(){ return this.empty; }
   toDataURL(){ return this.canvas.toDataURL('image/png'); }
   loadFromDataURL(url){
@@ -687,20 +681,13 @@ function openForm(){
   fotoDataUrl = null;
   updatePhotoPreview();
 
-  showView('viewForm');
-
-  // só preparamos os canvases DEPOIS que a tela está visível, senão o
-  // navegador calcula o tamanho do desenho como zero.
   if(!signVendedor) signVendedor = new SignaturePad(document.getElementById('canvasVendedor'));
-  else signVendedor.recalibrate();
   if(!signComprador) signComprador = new SignaturePad(document.getElementById('canvasComprador'));
-  else signComprador.recalibrate();
-  signVendedor.clear(); signComprador.clear();
-
-  // o canvas da testemunha fica escondido até o checkbox ser marcado,
-  // então ele é preparado separadamente nesse momento (ver listener abaixo).
+  if(!signTestemunha) signTestemunha = new SignaturePad(document.getElementById('canvasTestemunha'));
+  signVendedor.clear(); signComprador.clear(); signTestemunha.clear();
 
   loadDefaultBuyerSignature(true);
+  showView('viewForm');
 }
 
 document.getElementById('f_cpf').addEventListener('input', (e)=> e.target.value = maskCPF(e.target.value));
@@ -721,16 +708,11 @@ document.querySelectorAll('input[name="formaPagamento"]').forEach(r=>{
 
 document.getElementById('chkTestemunha').addEventListener('change', (e)=>{
   document.getElementById('testemunhaFields').classList.toggle('hidden', !e.target.checked);
-  if(e.target.checked){
-    if(!signTestemunha) signTestemunha = new SignaturePad(document.getElementById('canvasTestemunha'));
-    else signTestemunha.recalibrate();
-    signTestemunha.clear();
-  }
 });
 
 document.getElementById('btnLimparVendedor').addEventListener('click', ()=> signVendedor.clear());
 document.getElementById('btnLimparComprador').addEventListener('click', ()=> signComprador.clear());
-document.getElementById('btnLimparTestemunha').addEventListener('click', ()=> signTestemunha && signTestemunha.clear());
+document.getElementById('btnLimparTestemunha').addEventListener('click', ()=> signTestemunha.clear());
 
 /* photo capture */
 const fotoInput = document.getElementById('fotoInput');
