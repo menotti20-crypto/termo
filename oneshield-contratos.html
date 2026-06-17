@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oneshield · Contratos de Compra e Venda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0B1E33;
+  --ink-soft:#3A4F66;
+  --paper:#F2F3F1;
+  --paper-line:#DBDFD9;
+  --card:#FFFFFF;
+  --brass:#C9924B;
+  --brass-deep:#A9762F;
+  --brass-pale:#F1E2C8;
+  --danger:#C0392B;
+  --success:#2E7D4F;
+  --radius:10px;
+  --shadow:0 2px 16px rgba(11,30,51,.10);
+  --font-display:'Fraunces',serif;
+  --font-body:'Inter',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;}
+h1,h2,h3,h4{font-family:var(--font-display);margin:0;color:var(--ink);}
+button{font-family:var(--font-body);cursor:pointer;}
+input,select,textarea{font-family:var(--font-body);}
+:focus-visible{outline:2px solid var(--brass-deep);outline-offset:2px;}
+a{color:var(--brass-deep);}
+
+/* ---------- layout shells ---------- */
+#loginView,#appShell{min-height:100vh;}
+.hidden{display:none !important;}
+
+/* ---------- login ---------- */
+#loginView{display:flex;align-items:center;justify-content:center;padding:24px;}
+.login-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:36px 32px;width:100%;max-width:380px;}
+.login-brand{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+.login-brand .brand-name{font-family:var(--font-display);font-weight:700;font-size:1.25rem;letter-spacing:.02em;}
+.login-brand .brand-sub{display:block;font-size:.72rem;color:var(--ink-soft);letter-spacing:.06em;text-transform:uppercase;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:.8rem;font-weight:600;color:var(--ink-soft);margin-bottom:6px;}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid var(--paper-line);border-radius:8px;font-size:.95rem;background:#fff;color:var(--ink);}
+.field textarea{resize:vertical;min-height:54px;}
+.login-error{color:var(--danger);font-size:.85rem;margin:-4px 0 14px;min-height:1em;}
+.btn{border:none;border-radius:8px;padding:11px 18px;font-size:.92rem;font-weight:600;transition:transform .05s ease,opacity .15s;}
+.btn:active{transform:scale(.98);}
+.btn-brass{background:var(--brass);color:#fff;}
+.btn-brass:hover{background:var(--brass-deep);}
+.btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--paper-line);}
+.btn-ghost:hover{background:#fff;}
+.btn-danger{background:#fff;color:var(--danger);border:1px solid #E8C2BB;}
+.btn-danger:hover{background:#FBEAE7;}
+.btn-block{width:100%;}
+.btn:disabled{opacity:.55;cursor:default;}
+.login-note{margin-top:18px;font-size:.78rem;color:var(--ink-soft);text-align:center;}
+
+/* ---------- shield icon ---------- */
+.shield-icon{flex-shrink:0;}
+
+/* ---------- topbar ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--ink);color:#fff;}
+.topbar .brand{display:flex;align-items:center;gap:10px;}
+.topbar .brand-name{font-family:var(--font-display);font-weight:700;font-size:1.05rem;letter-spacing:.02em;}
+.topbar .brand-sub{display:block;font-size:.66rem;color:#A9BBCC;letter-spacing:.07em;text-transform:uppercase;}
+.topbar .right{display:flex;align-items:center;gap:14px;}
+.topbar .user-email{font-size:.78rem;color:#C7D3DE;font-family:var(--font-mono);}
+.topbar .btn-ghost{color:#E6EAEE;border-color:#2C4259;}
+.topbar .btn-ghost:hover{background:#16304A;}
+
+main.view{max-width:880px;margin:0 auto;padding:24px 18px 60px;}
+
+/* ---------- list view ---------- */
+.list-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:18px;}
+.list-toolbar input{flex:1;padding:11px 14px;border:1px solid var(--paper-line);border-radius:8px;font-size:.95rem;background:#fff;}
+.empty-state{text-align:center;padding:60px 20px;color:var(--ink-soft);}
+.empty-state .shield-icon{margin:0 auto 14px;opacity:.5;}
+.contract-list{display:flex;flex-direction:column;gap:10px;}
+.contract-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.contract-card .info .number{font-family:var(--font-mono);font-size:.72rem;color:var(--brass-deep);letter-spacing:.04em;}
+.contract-card .info .nome{font-weight:600;margin:2px 0;}
+.contract-card .info .meta{font-size:.82rem;color:var(--ink-soft);}
+.contract-card .actions{display:flex;gap:8px;flex-shrink:0;}
+.contract-card .actions .btn{padding:8px 12px;font-size:.82rem;}
+.loading-line{color:var(--ink-soft);text-align:center;padding:40px;}
+
+/* ---------- form view ---------- */
+.form-section{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:16px;}
+.form-section h3{font-size:1rem;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.form-section h3 .eyebrow{font-family:var(--font-mono);font-size:.7rem;color:var(--brass-deep);background:var(--brass-pale);padding:2px 7px;border-radius:5px;letter-spacing:.04em;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media (max-width:640px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+.checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.checkbox-row input{width:auto;}
+.radio-option{display:flex;align-items:flex-start;gap:8px;padding:10px;border:1px solid var(--paper-line);border-radius:8px;margin-bottom:8px;cursor:pointer;}
+.radio-option input{margin-top:3px;}
+.radio-option.active{border-color:var(--brass);background:var(--brass-pale);}
+.photo-capture{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.photo-preview{width:96px;height:96px;border-radius:8px;background:var(--paper);border:1px dashed var(--paper-line);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--ink-soft);font-size:.7rem;text-align:center;}
+.photo-preview img{width:100%;height:100%;object-fit:cover;}
+.sign-pad-wrap{border:1px dashed var(--paper-line);border-radius:8px;background:#fdfdfc;overflow:hidden;}
+.sign-pad-wrap canvas{display:block;width:100%;height:140px;touch-action:none;}
+.sign-controls{display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:8px;}
+.sign-controls .btn{padding:7px 12px;font-size:.78rem;}
+.helper-text{font-size:.78rem;color:var(--ink-soft);margin-top:4px;}
+.extenso-preview{font-size:.82rem;color:var(--ink-soft);margin-top:6px;font-style:italic;}
+.form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:6px;}
+
+/* ---------- toast ---------- */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:8px;font-size:.86rem;box-shadow:var(--shadow);z-index:999;max-width:90vw;}
+.toast.error{background:var(--danger);}
+.toast.success{background:var(--success);}
+
+/* ---------- preview / print ---------- */
+.preview-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.preview-actions .left,.preview-actions .right{display:flex;gap:10px;}
+.a4-page{background:#fff;width:210mm;min-height:297mm;margin:0 auto;padding:16mm 16mm;box-shadow:var(--shadow);font-size:11.3px;line-height:1.5;color:var(--ink);}
+@media (max-width:880px){.a4-page{width:100%;padding:6mm;font-size:11px;}}
+.doc-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:16px;}
+.doc-head h1{font-size:1.05rem;line-height:1.25;letter-spacing:.01em;}
+.doc-number{font-family:var(--font-mono);font-size:.7rem;color:var(--brass-deep);margin-top:6px;}
+.doc-seal text{font-family:var(--font-mono);font-size:6.4px;letter-spacing:1.5px;fill:var(--brass-deep);}
+.doc-seal .seal-center{font-family:var(--font-display);font-weight:700;font-size:9px;fill:var(--ink);}
+.doc-party{margin-bottom:12px;}
+.doc-party h4{font-size:.8rem;letter-spacing:.04em;color:var(--brass-deep);margin-bottom:4px;}
+.doc-party p{margin:1px 0;}
+.doc-clause h4{font-size:.84rem;margin:14px 0 5px;letter-spacing:.01em;}
+.doc-clause p{margin:3px 0;}
+.doc-signatures{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:30px;}
+.sign-block{text-align:center;}
+.sign-block .sign-img{height:46px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:2px;}
+.sign-block .sign-img img{max-height:44px;max-width:100%;}
+.sign-block .sign-line{border-top:1px solid var(--ink);padding-top:4px;font-size:.74rem;line-height:1.4;}
+.doc-photo{margin-top:18px;display:flex;align-items:center;gap:10px;}
+.doc-photo img{width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--paper-line);}
+.doc-photo span{font-size:.7rem;color:var(--ink-soft);}
+
+@media print{
+  .no-print{display:none !important;}
+  body{background:#fff;}
+  .a4-page{box-shadow:none;margin:0;width:auto;min-height:0;}
+  @page{size:A4;margin:15mm;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="loginView">
+  <div class="login-card">
+    <div class="login-brand">
+      <svg class="shield-icon" width="34" height="34" viewBox="0 0 48 48" fill="none">
+        <path d="M24 4 L42 11 V23 C42 35 34 42 24 45 C14 42 6 35 6 23 V11 Z" fill="#0B1E33"/>
+        <path d="M24 4 L42 11 V23 C42 35 34 42 24 45 C14 42 6 35 6 23 V11 Z" stroke="#C9924B" stroke-width="1.5"/>
+        <path d="M16 24 L22 30 L33 18" stroke="#C9924B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div>
+        <span class="brand-name">ONESHIELD</span>
+        <span class="brand-sub">Contratos de compra</span>
+      </div>
+    </div>
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginEmail">E-mail</label>
+        <input type="email" id="loginEmail" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="loginSenha">Senha</label>
+        <input type="password" id="loginSenha" autocomplete="current-password" required>
+      </div>
+      <div class="login-error" id="loginError"></div>
+      <button type="submit" class="btn btn-brass btn-block" id="btnLogin">Entrar</button>
+    </form>
+    <p class="login-note">Acesso restrito à equipe Oneshield. Sem cadastro próprio — fale com a administração se precisar de acesso.</p>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="appShell" class="hidden">
+  <div class="topbar">
+    <div class="brand">
+      <svg class="shield-icon" width="26" height="26" viewBox="0 0 48 48" fill="none">
+        <path d="M24 4 L42 11 V23 C42 35 34 42 24 45 C14 42 6 35 6 23 V11 Z" fill="#C9924B"/>
+        <path d="M16 24 L22 30 L33 18" stroke="#0B1E33" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div>
+        <span class="brand-name">ONESHIELD</span>
+        <span class="brand-sub">Contratos de compra</span>
+      </div>
+    </div>
+    <div class="right">
+      <span class="user-email" id="userEmailLabel"></span>
+      <button class="btn btn-ghost" id="btnLogout">Sair</button>
+    </div>
+  </div>
+
+  <!-- LIST -->
+  <main class="view" id="viewList">
+    <div class="list-toolbar">
+      <input type="text" id="searchInput" placeholder="Buscar por nome, IMEI ou nº do contrato">
+      <button class="btn btn-brass" id="btnNovo">+ Novo contrato</button>
+    </div>
+    <div id="listLoading" class="loading-line">Carregando contratos…</div>
+    <div id="listEmpty" class="empty-state hidden">
+      <svg class="shield-icon" width="44" height="44" viewBox="0 0 48 48" fill="none">
+        <path d="M24 4 L42 11 V23 C42 35 34 42 24 45 C14 42 6 35 6 23 V11 Z" stroke="#3A4F66" stroke-width="2"/>
+      </svg>
+      <p>Nenhum contrato ainda. Toque em "Novo contrato" para registrar a primeira compra.</p>
+    </div>
+    <div class="contract-list" id="contractList"></div>
+  </main>
+
+  <!-- FORM -->
+  <main class="view hidden" id="viewForm">
+    <form id="contractForm">
+
+      <div class="form-section">
+        <h3><span class="eyebrow">01</span> Dados do vendedor</h3>
+        <div class="grid-2">
+          <div class="field"><label for="f_nome">Nome completo</label><input type="text" id="f_nome" required></div>
+          <div class="field"><label for="f_cpf">CPF</label><input type="text" id="f_cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label for="f_nacionalidade">Nacionalidade</label><input type="text" id="f_nacionalidade" value="Brasileira"></div>
+          <div class="field"><label for="f_endereco">Endereço</label><input type="text" id="f_endereco" placeholder="Rua, número, bairro, cidade"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3><span class="eyebrow">02</span> Dados do aparelho</h3>
+        <div class="grid-3">
+          <div class="field">
+            <label for="f_marca">Marca / modelo</label>
+            <input type="text" id="f_marca" list="modelosList" required>
+            <datalist id="modelosList">
+              <option>iPhone 11</option><option>iPhone 11 Pro</option><option>iPhone 11 Pro Max</option>
+              <option>iPhone 12</option><option>iPhone 12 Mini</option><option>iPhone 12 Pro</option><option>iPhone 12 Pro Max</option>
+              <option>iPhone 13</option><option>iPhone 13 Mini</option><option>iPhone 13 Pro</option><option>iPhone 13 Pro Max</option>
+              <option>iPhone 14</option><option>iPhone 14 Plus</option><option>iPhone 14 Pro</option><option>iPhone 14 Pro Max</option>
+              <option>iPhone 15</option><option>iPhone 15 Plus</option><option>iPhone 15 Pro</option><option>iPhone 15 Pro Max</option>
+              <option>iPhone 16</option><option>iPhone 16 Plus</option><option>iPhone 16 Pro</option><option>iPhone 16 Pro Max</option><option>iPhone 16e</option>
+              <option>iPhone 17</option><option>iPhone 17 Pro</option><option>iPhone 17 Pro Max</option>
+              <option>iPhone SE (2020)</option><option>iPhone SE (2022)</option>
+            </datalist>
+          </div>
+          <div class="field"><label for="f_cor">Cor</label><input type="text" id="f_cor"></div>
+          <div class="field">
+            <label for="f_capacidade">Capacidade</label>
+            <input type="text" id="f_capacidade" list="capacidadeList" placeholder="Ex: 128GB">
+            <datalist id="capacidadeList"><option>64GB</option><option>128GB</option><option>256GB</option><option>512GB</option><option>1TB</option></datalist>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label for="f_imei">IMEI</label><input type="text" id="f_imei" inputmode="numeric" maxlength="17" required></div>
+          <div class="field"><label for="f_garantia">Prazo de garantia p/ vício oculto (dias)</label><input type="number" id="f_garantia" min="0" max="90" value="7"></div>
+        </div>
+        <div class="field"><label for="f_estado">Estado de conservação</label><textarea id="f_estado" placeholder="Ex: tela sem trincos, pequenos arranhões na carcaça, bateria 87%..."></textarea></div>
+      </div>
+
+      <div class="form-section">
+        <h3><span class="eyebrow">03</span> Valor e pagamento</h3>
+        <div class="field"><label for="f_valor">Valor (R$)</label><input type="number" id="f_valor" min="0" step="0.01" inputmode="decimal" required></div>
+        <div class="extenso-preview" id="extensoPreview"></div>
+        <div style="margin-top:14px;">
+          <label class="radio-option active" id="optVista">
+            <input type="radio" name="formaPagamento" value="vista" checked>
+            <span>À vista, em dinheiro / PIX / transferência bancária</span>
+          </label>
+          <label class="radio-option" id="optParcelado">
+            <input type="radio" name="formaPagamento" value="parcelado">
+            <span>Parcelado</span>
+          </label>
+        </div>
+        <div class="field hidden" id="parceladoDetalheWrap">
+          <label for="f_parcelamento">Detalhe do parcelamento</label>
+          <input type="text" id="f_parcelamento" placeholder="Ex: em 3x de R$ 200,00 no cartão">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3><span class="eyebrow">04</span> Foto do vendedor</h3>
+        <div class="photo-capture">
+          <div class="photo-preview" id="photoPreviewBox">sem foto</div>
+          <input type="file" accept="image/*" capture="user" id="fotoInput" class="hidden">
+          <button type="button" class="btn btn-ghost" id="btnTirarFoto">Tirar / escolher foto</button>
+          <button type="button" class="btn btn-ghost hidden" id="btnRemoverFoto">Remover</button>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3><span class="eyebrow">05</span> Assinatura do vendedor</h3>
+        <div class="sign-pad-wrap"><canvas id="canvasVendedor"></canvas></div>
+        <div class="sign-controls">
+          <span class="helper-text">Assine com o dedo ou mouse</span>
+          <button type="button" class="btn btn-ghost" id="btnLimparVendedor">Limpar</button>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3><span class="eyebrow">06</span> Assinatura do comprador (Oneshield)</h3>
+        <div class="sign-pad-wrap"><canvas id="canvasComprador"></canvas></div>
+        <div class="sign-controls">
+          <button type="button" class="btn btn-ghost" id="btnUsarPadrao">Usar assinatura salva</button>
+          <button type="button" class="btn btn-ghost" id="btnLimparComprador">Limpar</button>
+        </div>
+        <div class="checkbox-row" style="margin-top:10px;">
+          <input type="checkbox" id="chkSalvarPadrao">
+          <label for="chkSalvarPadrao" style="margin:0;font-size:.84rem;color:var(--ink-soft);">Salvar esta assinatura como padrão da loja</label>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="checkbox-row">
+          <input type="checkbox" id="chkTestemunha">
+          <label for="chkTestemunha" style="margin:0;"><strong>Incluir testemunha</strong></label>
+        </div>
+        <div id="testemunhaFields" class="hidden">
+          <div class="grid-2">
+            <div class="field"><label for="f_testNome">Nome da testemunha</label><input type="text" id="f_testNome"></div>
+            <div class="field"><label for="f_testCpf">CPF da testemunha</label><input type="text" id="f_testCpf" inputmode="numeric" maxlength="14"></div>
+          </div>
+          <div class="sign-pad-wrap"><canvas id="canvasTestemunha"></canvas></div>
+          <div class="sign-controls">
+            <span class="helper-text">Assinatura da testemunha (opcional)</span>
+            <button type="button" class="btn btn-ghost" id="btnLimparTestemunha">Limpar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3><span class="eyebrow">07</span> Local e data</h3>
+        <div class="grid-2">
+          <div class="field"><label for="f_cidade">Cidade</label><input type="text" id="f_cidade" value="Cianorte-PR"></div>
+          <div class="field"><label for="f_data">Data</label><input type="date" id="f_data"></div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" id="btnCancelarForm">Cancelar</button>
+        <button type="submit" class="btn btn-brass" id="btnSalvar">Salvar contrato</button>
+      </div>
+    </form>
+  </main>
+
+  <!-- PREVIEW / PRINT -->
+  <main class="view hidden" id="viewPreview">
+    <div class="preview-actions no-print">
+      <div class="left"><button class="btn btn-ghost" id="btnVoltarPreview">← Voltar</button></div>
+      <div class="right">
+        <button class="btn btn-brass" id="btnImprimir">Imprimir / salvar PDF</button>
+        <button class="btn btn-danger" id="btnExcluir">Excluir</button>
+      </div>
+    </div>
+    <div class="a4-page" id="printArea"></div>
+  </main>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, collection, addDoc, doc, getDoc, setDoc, deleteDoc,
+  query, orderBy, onSnapshot, runTransaction, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCRvC2aaDN2zwXWROTuRD3d2hCQytghjuo",
+  authDomain: "oneshield-contratos.firebaseapp.com",
+  projectId: "oneshield-contratos",
+  storageBucket: "oneshield-contratos.firebasestorage.app",
+  messagingSenderId: "685676888976",
+  appId: "1:685676888976:web:20d90018d54c94f473a915"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const COMPRADOR = {
+  nome: "ONESHIELD BRASIL CELULARES LTDA",
+  cnpj: "36.094.462/0001-62",
+  ie: "90.140.168-37",
+  endereco: "Rua Constituição, 189-C, Cianorte-PR, CEP 87200-161"
+};
+
+/* ---------------- helpers ---------------- */
+function esc(s){
+  return (s === undefined || s === null ? "" : String(s))
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function toast(msg, type){
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "toast" + (type ? " " + type : "");
+  el.classList.remove("hidden");
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=> el.classList.add("hidden"), 3600);
+}
+function brl(v){
+  return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+}
+function maskCPF(v){
+  const d = v.replace(/\D/g,"").slice(0,11);
+  let out = d;
+  if(d.length>9) out = d.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/,"$1.$2.$3-$4");
+  else if(d.length>6) out = d.replace(/(\d{3})(\d{3})(\d{1,3})/,"$1.$2.$3");
+  else if(d.length>3) out = d.replace(/(\d{3})(\d{1,3})/,"$1.$2");
+  return out;
+}
+function onlyDigits(v, max){ return v.replace(/\D/g,"").slice(0, max); }
+function dataFormatadaBR(isoDate){
+  if(!isoDate) return "";
+  const [y,m,d] = isoDate.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+/* ---------------- número por extenso ---------------- */
+const UNI=['','um','dois','três','quatro','cinco','seis','sete','oito','nove'];
+const DEZ19=['dez','onze','doze','treze','quatorze','quinze','dezesseis','dezessete','dezoito','dezenove'];
+const DEZS=['','','vinte','trinta','quarenta','cinquenta','sessenta','setenta','oitenta','noventa'];
+const CENT=['','cento','duzentos','trezentos','quatrocentos','quinhentos','seiscentos','setecentos','oitocentos','novecentos'];
+function trinaToWords(n){
+  if(n===0) return '';
+  if(n===100) return 'cem';
+  const h=Math.floor(n/100), r=n%100;
+  const parts=[];
+  if(h) parts.push(CENT[h]);
+  if(r){
+    if(r<10) parts.push(UNI[r]);
+    else if(r<20) parts.push(DEZ19[r-10]);
+    else { const dd=Math.floor(r/10), u=r%10; parts.push(u? DEZS[dd]+' e '+UNI[u] : DEZS[dd]); }
+  }
+  return parts.join(' e ');
+}
+function integerToExtenso(n){
+  if(n===0) return 'zero';
+  const groups=[]; let t=n;
+  while(t>0){ groups.push(t%1000); t=Math.floor(t/1000); }
+  const parts=[];
+  for(let i=groups.length-1;i>=0;i--){
+    const g=groups[i];
+    if(g===0) continue;
+    const words=trinaToWords(g);
+    if(i===0) parts.push(words);
+    else if(i===1) parts.push(g===1 ? 'mil' : words+' mil');
+    else { const label = g===1 ? (i===2?'milhão':'bilhão') : (i===2?'milhões':'bilhões'); parts.push(words+' '+label); }
+  }
+  if(parts.length===1) return parts[0];
+  const last=parts.pop();
+  return parts.join(', ')+' e '+last;
+}
+function valorExtenso(value){
+  const v = Math.max(0, Number(value)||0);
+  const reais = Math.floor(v);
+  const centavos = Math.round((v-reais)*100);
+  let str = integerToExtenso(reais)+(reais===1?' real':' reais');
+  if(centavos>0) str += ' e '+integerToExtenso(centavos)+(centavos===1?' centavo':' centavos');
+  return str;
+}
+
+/* ---------------- signature pad ---------------- */
+class SignaturePad{
+  constructor(canvas){
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.empty = true;
+    this._setup();
+    window.addEventListener('resize', ()=> this._setup(true));
+  }
+  _setup(keepContent){
+    const rect = this.canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    let prevData = null;
+    if(keepContent && !this.empty){ prevData = this.canvas.toDataURL('image/png'); }
+    this.canvas.width = Math.max(rect.width,1) * dpr;
+    this.canvas.height = Math.max(rect.height,1) * dpr;
+    this.ctx.scale(dpr,dpr);
+    this.ctx.lineWidth = 2.2;
+    this.ctx.lineCap = 'round';
+    this.ctx.lineJoin = 'round';
+    this.ctx.strokeStyle = '#0B1E33';
+    this._bind();
+    if(prevData){ this.loadFromDataURL(prevData); }
+  }
+  _bind(){
+    if(this._bound) return;
+    this._bound = true;
+    const c = this.canvas;
+    let drawing=false, last=null;
+    const pos = (e)=>{
+      const rect = c.getBoundingClientRect();
+      return { x:(e.clientX-rect.left), y:(e.clientY-rect.top) };
+    };
+    const start = (e)=>{ drawing=true; this.empty=false; last=pos(e); c.setPointerCapture && e.pointerId!==undefined && c.setPointerCapture(e.pointerId); };
+    const move = (e)=>{
+      if(!drawing) return;
+      const p = pos(e);
+      this.ctx.beginPath();
+      this.ctx.moveTo(last.x,last.y);
+      this.ctx.lineTo(p.x,p.y);
+      this.ctx.stroke();
+      last = p;
+      e.preventDefault();
+    };
+    const end = ()=>{ drawing=false; last=null; };
+    c.addEventListener('pointerdown', start);
+    c.addEventListener('pointermove', move);
+    c.addEventListener('pointerup', end);
+    c.addEventListener('pointerleave', end);
+    c.addEventListener('pointercancel', end);
+  }
+  clear(){
+    const rect = this.canvas.getBoundingClientRect();
+    this.ctx.clearRect(0,0,rect.width,rect.height);
+    this.empty = true;
+  }
+  recalibrate(){
+    // chame isso depois que o canvas voltar a ficar visível na tela —
+    // se ele estava escondido (display:none) quando foi criado, o tamanho
+    // do desenho ficou zerado e nada aparecia ao assinar.
+    this._setup(true);
+  }
+  isEmpty(){ return this.empty; }
+  toDataURL(){ return this.canvas.toDataURL('image/png'); }
+  loadFromDataURL(url){
+    const img = new Image();
+    img.onload = ()=>{
+      const rect = this.canvas.getBoundingClientRect();
+      this.ctx.clearRect(0,0,rect.width,rect.height);
+      this.ctx.drawImage(img,0,0,rect.width,rect.height);
+      this.empty = false;
+    };
+    img.src = url;
+  }
+}
+
+/* ---------------- image resize for upload ---------------- */
+function resizeImageFile(file, maxDim, quality){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onerror = ()=> reject(new Error('Não foi possível ler a imagem.'));
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onerror = ()=> reject(new Error('Imagem inválida.'));
+      img.onload = ()=>{
+        let { width, height } = img;
+        if(width > height){ if(width > maxDim){ height = Math.round(height*maxDim/width); width = maxDim; } }
+        else { if(height > maxDim){ width = Math.round(width*maxDim/height); height = maxDim; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img,0,0,width,height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ---------------- state ---------------- */
+let signVendedor, signComprador, signTestemunha;
+let fotoDataUrl = null;
+let contractsCache = [];
+let unsubscribeList = null;
+
+/* ---------------- auth ---------------- */
+const loginForm = document.getElementById('loginForm');
+const loginError = document.getElementById('loginError');
+const btnLogin = document.getElementById('btnLogin');
+
+loginForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  loginError.textContent = '';
+  btnLogin.disabled = true;
+  btnLogin.textContent = 'Entrando…';
+  const email = document.getElementById('loginEmail').value.trim();
+  const senha = document.getElementById('loginSenha').value;
+  try{
+    await signInWithEmailAndPassword(auth, email, senha);
+  }catch(err){
+    const map = {
+      'auth/invalid-credential': 'E-mail ou senha incorretos.',
+      'auth/invalid-email': 'E-mail inválido.',
+      'auth/too-many-requests': 'Muitas tentativas. Aguarde um pouco e tente de novo.',
+      'auth/user-disabled': 'Este acesso foi desativado.'
+    };
+    loginError.textContent = map[err.code] || 'Não foi possível entrar. Verifique sua conexão.';
+  }finally{
+    btnLogin.disabled = false;
+    btnLogin.textContent = 'Entrar';
+  }
+});
+
+document.getElementById('btnLogout').addEventListener('click', ()=> signOut(auth));
+
+onAuthStateChanged(auth, (user)=>{
+  if(user){
+    document.getElementById('loginView').classList.add('hidden');
+    document.getElementById('appShell').classList.remove('hidden');
+    document.getElementById('userEmailLabel').textContent = user.email;
+    startContractListener();
+    showView('viewList');
+  }else{
+    document.getElementById('appShell').classList.add('hidden');
+    document.getElementById('loginView').classList.remove('hidden');
+    if(unsubscribeList){ unsubscribeList(); unsubscribeList = null; }
+  }
+});
+
+/* ---------------- view switching ---------------- */
+function showView(id){
+  ['viewList','viewForm','viewPreview'].forEach(v=>{
+    document.getElementById(v).classList.toggle('hidden', v!==id);
+  });
+}
+
+/* ---------------- list ---------------- */
+function startContractListener(){
+  const q = query(collection(db,'contratos'), orderBy('criadoEm','desc'));
+  unsubscribeList = onSnapshot(q, (snap)=>{
+    contractsCache = snap.docs.map(d=> ({ id:d.id, ...d.data() }));
+    document.getElementById('listLoading').classList.add('hidden');
+    renderList(contractsCache);
+  }, (err)=>{
+    document.getElementById('listLoading').textContent = 'Não foi possível carregar os contratos.';
+    toast('Erro ao carregar contratos. Verifique as regras do Firestore.', 'error');
+    console.error(err);
+  });
+}
+
+function renderList(list){
+  const term = document.getElementById('searchInput').value.trim().toLowerCase();
+  const filtered = term ? list.filter(c=>{
+    return (c.vendedor?.nome||'').toLowerCase().includes(term)
+      || (c.aparelho?.imei||'').toLowerCase().includes(term)
+      || (c.numero||'').toLowerCase().includes(term);
+  }) : list;
+
+  const wrap = document.getElementById('contractList');
+  document.getElementById('listEmpty').classList.toggle('hidden', filtered.length>0);
+  wrap.innerHTML = filtered.map(c=>`
+    <div class="contract-card" data-id="${c.id}">
+      <div class="info">
+        <div class="number">${esc(c.numero||'')}</div>
+        <div class="nome">${esc(c.vendedor?.nome||'(sem nome)')}</div>
+        <div class="meta">${esc(c.aparelho?.marcaModelo||'')} · ${brl(c.valor)} · ${esc(dataFormatadaBR(c.dataContrato))}</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" data-action="ver" data-id="${c.id}">Ver / imprimir</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('searchInput').addEventListener('input', ()=> renderList(contractsCache));
+document.getElementById('contractList').addEventListener('click', (e)=>{
+  const btn = e.target.closest('button[data-action="ver"]');
+  if(!btn) return;
+  const c = contractsCache.find(x=>x.id===btn.dataset.id);
+  if(c) openPreview(c);
+});
+
+document.getElementById('btnNovo').addEventListener('click', openForm);
+document.getElementById('btnCancelarForm').addEventListener('click', ()=> showView('viewList'));
+
+/* ---------------- form ---------------- */
+function openForm(){
+  document.getElementById('contractForm').reset();
+  document.getElementById('f_nacionalidade').value = 'Brasileira';
+  document.getElementById('f_cidade').value = 'Cianorte-PR';
+  document.getElementById('f_garantia').value = 7;
+  document.getElementById('f_data').value = new Date().toISOString().slice(0,10);
+  document.getElementById('extensoPreview').textContent = '';
+  document.getElementById('parceladoDetalheWrap').classList.add('hidden');
+  document.getElementById('optVista').classList.add('active');
+  document.getElementById('optParcelado').classList.remove('active');
+  document.getElementById('testemunhaFields').classList.add('hidden');
+  fotoDataUrl = null;
+  updatePhotoPreview();
+
+  showView('viewForm');
+
+  // só preparamos os canvases DEPOIS que a tela está visível, senão o
+  // navegador calcula o tamanho do desenho como zero.
+  if(!signVendedor) signVendedor = new SignaturePad(document.getElementById('canvasVendedor'));
+  else signVendedor.recalibrate();
+  if(!signComprador) signComprador = new SignaturePad(document.getElementById('canvasComprador'));
+  else signComprador.recalibrate();
+  signVendedor.clear(); signComprador.clear();
+
+  // o canvas da testemunha fica escondido até o checkbox ser marcado,
+  // então ele é preparado separadamente nesse momento (ver listener abaixo).
+
+  loadDefaultBuyerSignature(true);
+}
+
+document.getElementById('f_cpf').addEventListener('input', (e)=> e.target.value = maskCPF(e.target.value));
+document.getElementById('f_testCpf').addEventListener('input', (e)=> e.target.value = maskCPF(e.target.value));
+document.getElementById('f_imei').addEventListener('input', (e)=> e.target.value = onlyDigits(e.target.value,17));
+document.getElementById('f_valor').addEventListener('input', (e)=>{
+  document.getElementById('extensoPreview').textContent = e.target.value ? valorExtenso(e.target.value) : '';
+});
+
+document.querySelectorAll('input[name="formaPagamento"]').forEach(r=>{
+  r.addEventListener('change', ()=>{
+    const isParcelado = document.querySelector('input[name="formaPagamento"]:checked').value === 'parcelado';
+    document.getElementById('parceladoDetalheWrap').classList.toggle('hidden', !isParcelado);
+    document.getElementById('optVista').classList.toggle('active', !isParcelado);
+    document.getElementById('optParcelado').classList.toggle('active', isParcelado);
+  });
+});
+
+document.getElementById('chkTestemunha').addEventListener('change', (e)=>{
+  document.getElementById('testemunhaFields').classList.toggle('hidden', !e.target.checked);
+  if(e.target.checked){
+    if(!signTestemunha) signTestemunha = new SignaturePad(document.getElementById('canvasTestemunha'));
+    else signTestemunha.recalibrate();
+    signTestemunha.clear();
+  }
+});
+
+document.getElementById('btnLimparVendedor').addEventListener('click', ()=> signVendedor.clear());
+document.getElementById('btnLimparComprador').addEventListener('click', ()=> signComprador.clear());
+document.getElementById('btnLimparTestemunha').addEventListener('click', ()=> signTestemunha && signTestemunha.clear());
+
+/* photo capture */
+const fotoInput = document.getElementById('fotoInput');
+document.getElementById('btnTirarFoto').addEventListener('click', ()=> fotoInput.click());
+fotoInput.addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  try{
+    fotoDataUrl = await resizeImageFile(file, 640, 0.7);
+    updatePhotoPreview();
+  }catch(err){
+    toast('Não foi possível usar essa foto. Tente outra.', 'error');
+  }
+});
+document.getElementById('btnRemoverFoto').addEventListener('click', ()=>{
+  fotoDataUrl = null; fotoInput.value=''; updatePhotoPreview();
+});
+function updatePhotoPreview(){
+  const box = document.getElementById('photoPreviewBox');
+  box.innerHTML = fotoDataUrl ? `<img src="${fotoDataUrl}">` : 'sem foto';
+  document.getElementById('btnRemoverFoto').classList.toggle('hidden', !fotoDataUrl);
+}
+
+/* default buyer signature */
+async function loadDefaultBuyerSignature(silent){
+  try{
+    const snap = await getDoc(doc(db,'config','assinaturaPadraoComprador'));
+    if(snap.exists() && snap.data().imagem){
+      signComprador.loadFromDataURL(snap.data().imagem);
+    }else if(!silent){
+      toast('Nenhuma assinatura padrão salva ainda.');
+    }
+  }catch(err){
+    if(!silent) toast('Não foi possível carregar a assinatura padrão.', 'error');
+  }
+}
+document.getElementById('btnUsarPadrao').addEventListener('click', ()=> loadDefaultBuyerSignature(false));
+
+/* number sequence */
+async function getNextNumber(){
+  const year = new Date().getFullYear();
+  const ref = doc(db,'contadores', String(year));
+  const proximo = await runTransaction(db, async (tx)=>{
+    const snap = await tx.get(ref);
+    const atual = snap.exists() ? (snap.data().ultimo||0) : 0;
+    const novo = atual+1;
+    tx.set(ref, { ultimo: novo }, { merge:true });
+    return novo;
+  });
+  return `OS-${year}-${String(proximo).padStart(4,'0')}`;
+}
+
+/* save */
+document.getElementById('contractForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if(signVendedor.isEmpty()){ toast('Colete a assinatura do vendedor antes de salvar.', 'error'); return; }
+  if(signComprador.isEmpty()){ toast('Colete a assinatura do comprador antes de salvar.', 'error'); return; }
+
+  const btn = document.getElementById('btnSalvar');
+  btn.disabled = true; btn.textContent = 'Salvando…';
+
+  try{
+    const incluiTestemunha = document.getElementById('chkTestemunha').checked;
+    const numero = await getNextNumber();
+    const record = {
+      numero,
+      vendedor: {
+        nome: document.getElementById('f_nome').value.trim(),
+        cpf: document.getElementById('f_cpf').value.trim(),
+        nacionalidade: document.getElementById('f_nacionalidade').value.trim(),
+        endereco: document.getElementById('f_endereco').value.trim()
+      },
+      aparelho: {
+        marcaModelo: document.getElementById('f_marca').value.trim(),
+        cor: document.getElementById('f_cor').value.trim(),
+        capacidade: document.getElementById('f_capacidade').value.trim(),
+        imei: document.getElementById('f_imei').value.trim(),
+        estado: document.getElementById('f_estado').value.trim()
+      },
+      valor: Number(document.getElementById('f_valor').value || 0),
+      formaPagamento: document.querySelector('input[name="formaPagamento"]:checked').value,
+      parcelamentoDetalhe: document.getElementById('f_parcelamento').value.trim(),
+      garantiaDias: Number(document.getElementById('f_garantia').value || 0),
+      testemunha: incluiTestemunha ? {
+        nome: document.getElementById('f_testNome').value.trim(),
+        cpf: document.getElementById('f_testCpf').value.trim()
+      } : null,
+      cidade: document.getElementById('f_cidade').value.trim(),
+      dataContrato: document.getElementById('f_data').value,
+      fotoVendedor: fotoDataUrl,
+      assinaturaVendedor: signVendedor.toDataURL(),
+      assinaturaComprador: signComprador.toDataURL(),
+      assinaturaTestemunha: (incluiTestemunha && !signTestemunha.isEmpty()) ? signTestemunha.toDataURL() : null,
+      criadoEm: serverTimestamp(),
+      criadoPor: auth.currentUser ? auth.currentUser.email : null
+    };
+
+    if(document.getElementById('chkSalvarPadrao').checked){
+      try{ await setDoc(doc(db,'config','assinaturaPadraoComprador'), { imagem: record.assinaturaComprador }); }
+      catch(_e){ /* não bloqueia o salvamento do contrato */ }
+    }
+
+    const ref = await addDoc(collection(db,'contratos'), record);
+    toast('Contrato salvo com sucesso.', 'success');
+    openPreview({ id: ref.id, ...record });
+  }catch(err){
+    console.error(err);
+    toast('Não foi possível salvar. Verifique sua conexão e tente novamente.', 'error');
+  }finally{
+    btn.disabled = false; btn.textContent = 'Salvar contrato';
+  }
+});
+
+/* ---------------- preview / print ---------------- */
+let currentPreviewId = null;
+
+function openPreview(c){
+  currentPreviewId = c.id;
+  document.getElementById('printArea').innerHTML = buildContractHTML(c);
+  document.getElementById('btnExcluir').textContent = 'Excluir';
+  showView('viewPreview');
+}
+
+document.getElementById('btnVoltarPreview').addEventListener('click', ()=> showView('viewList'));
+document.getElementById('btnImprimir').addEventListener('click', ()=> window.print());
+
+let deleteArmed = false, deleteTimer = null;
+document.getElementById('btnExcluir').addEventListener('click', async (e)=>{
+  if(!deleteArmed){
+    deleteArmed = true;
+    e.target.textContent = 'Confirmar exclusão?';
+    deleteTimer = setTimeout(()=>{ deleteArmed=false; e.target.textContent='Excluir'; }, 4500);
+    return;
+  }
+  clearTimeout(deleteTimer);
+  deleteArmed = false;
+  try{
+    await deleteDoc(doc(db,'contratos', currentPreviewId));
+    toast('Contrato excluído.', 'success');
+    showView('viewList');
+  }catch(err){
+    toast('Não foi possível excluir. Tente novamente.', 'error');
+  }
+});
+
+function buildContractHTML(c){
+  const v = c.vendedor||{}, ap = c.aparelho||{}, t = c.testemunha;
+  const isVista = c.formaPagamento === 'vista';
+  const ckVista = isVista ? '☑' : '☐';
+  const ckParc = !isVista ? '☑' : '☐';
+  const dataBR = dataFormatadaBR(c.dataContrato);
+  const sealId = 'seal_'+Math.random().toString(36).slice(2,8);
+
+  const signImg = (src)=> src ? `<img src="${src}">` : '';
+
+  return `
+    <div class="doc-head">
+      <div>
+        <h1>CONTRATO PARTICULAR DE<br>COMPRA E VENDA DE CELULAR</h1>
+        <div class="doc-number">Nº ${esc(c.numero)}</div>
+      </div>
+      <svg class="doc-seal" width="86" height="86" viewBox="0 0 100 100">
+        <defs><path id="${sealId}" d="M 50,50 m -36,0 a 36,36 0 1,1 72,0 a 36,36 0 1,1 -72,0" /></defs>
+        <circle cx="50" cy="50" r="46" fill="none" stroke="#C9924B" stroke-width="1"/>
+        <circle cx="50" cy="50" r="30" fill="none" stroke="#C9924B" stroke-width="1"/>
+        <text><textPath href="#${sealId}">ONESHIELD · COMPRA SEGURA · ONESHIELD · COMPRA SEGURA ·</textPath></text>
+        <text x="50" y="48" text-anchor="middle" class="seal-center">ONE</text>
+        <text x="50" y="59" text-anchor="middle" class="seal-center">SHIELD</text>
+      </svg>
+    </div>
+
+    <div class="doc-party">
+      <h4>VENDEDOR</h4>
+      <p>Nome: ${esc(v.nome)}</p>
+      <p>CPF: ${esc(v.cpf)}</p>
+      <p>Nacionalidade: ${esc(v.nacionalidade)}</p>
+      <p>Endereço: ${esc(v.endereco)}</p>
+    </div>
+
+    <div class="doc-party">
+      <h4>COMPRADOR</h4>
+      <p>${esc(COMPRADOR.nome)}, CNPJ ${esc(COMPRADOR.cnpj)}, I.E. ${esc(COMPRADOR.ie)}, ${esc(COMPRADOR.endereco)}.</p>
+    </div>
+
+    <p>As partes acima identificadas têm entre si, de forma justa e contratada, o presente Contrato de Compra e Venda de Celular, que se regerá pelas cláusulas e condições seguintes:</p>
+
+    <div class="doc-clause">
+      <h4>CLÁUSULA 1ª – DO OBJETO</h4>
+      <p>O presente contrato tem como objeto a compra e venda do seguinte aparelho celular:</p>
+      <p>Marca/modelo: ${esc(ap.marcaModelo)} — Cor: ${esc(ap.cor)} — Capacidade: ${esc(ap.capacidade)}<br>
+      IMEI: ${esc(ap.imei)}<br>
+      Estado de conservação: ${esc(ap.estado)}</p>
+    </div>
+
+    <div class="doc-clause">
+      <h4>CLÁUSULA 2ª – DO VALOR E FORMA DE PAGAMENTO</h4>
+      <p>O preço certo e ajustado para a presente transação é de ${brl(c.valor)} (${esc(valorExtenso(c.valor))}), pago da seguinte forma:</p>
+      <p>${ckVista} À vista, em dinheiro / PIX / transferência bancária;<br>
+      ${ckParc} Parcelado em ${esc(c.parcelamentoDetalhe) || '_______________________________'}</p>
+    </div>
+
+    <div class="doc-clause">
+      <h4>CLÁUSULA 3ª – DA ENTREGA E POSSE</h4>
+      <p>O VENDEDOR entrega nesta data o aparelho ao COMPRADOR, livre e desembaraçado de qualquer ônus, restrição ou bloqueio, transferindo-lhe a posse plena e exclusiva.</p>
+    </div>
+
+    <div class="doc-clause">
+      <h4>CLÁUSULA 4ª – DA GARANTIA</h4>
+      <p>O VENDEDOR garante ser o legítimo proprietário do aparelho, declarando que:<br>
+      a) o bem não é objeto de furto, roubo ou perda;<br>
+      b) não possui restrições financeiras (ex.: alienação fiduciária, bloqueio por operadora ou pendências de contratos);<br>
+      c) encontra-se em perfeito estado de funcionamento, salvo desgaste natural decorrente do uso.</p>
+      <p>O COMPRADOR terá um prazo de ${esc(c.garantiaDias)} dias corridos, a contar da assinatura deste contrato, para reclamar de vícios ocultos que impeçam o funcionamento normal do aparelho.</p>
+    </div>
+
+    <div class="doc-clause">
+      <h4>CLÁUSULA 5ª – DAS RESPONSABILIDADES</h4>
+      <p>Após a entrega, a responsabilidade pelo uso, conservação, eventuais danos ou defeitos decorrentes de mau uso passa a ser exclusivamente do COMPRADOR.</p>
+    </div>
+
+    <div class="doc-clause">
+      <h4>CLÁUSULA 6ª – DA RESCISÃO</h4>
+      <p>O contrato poderá ser rescindido por:<br>
+      • inadimplemento de qualquer das partes;<br>
+      • vício oculto comprovado dentro do prazo da garantia;<br>
+      • comum acordo entre as partes.</p>
+    </div>
+
+    <div class="doc-clause">
+      <h4>CLÁUSULA 7ª – DO FORO</h4>
+      <p>Fica eleito o foro da comarca de Cianorte, Paraná, para dirimir quaisquer questões oriundas deste contrato, renunciando as partes a qualquer outro, por mais privilegiado que seja.</p>
+    </div>
+
+    <p>E, por estarem de pleno acordo, assinam o presente instrumento em duas vias de igual teor e forma, juntamente com as testemunhas abaixo.</p>
+
+    <p>${esc(c.cidade)}, ${esc(dataBR)}</p>
+
+    <div class="doc-signatures">
+      <div class="sign-block">
+        <div class="sign-img">${signImg(c.assinaturaVendedor)}</div>
+        <div class="sign-line">VENDEDOR<br>Nome: ${esc(v.nome)}<br>CPF: ${esc(v.cpf)}</div>
+      </div>
+      <div class="sign-block">
+        <div class="sign-img">${signImg(c.assinaturaComprador)}</div>
+        <div class="sign-line">COMPRADOR<br>Nome: ${esc(COMPRADOR.nome)}<br>CNPJ: ${esc(COMPRADOR.cnpj)}</div>
+      </div>
+      <div class="sign-block">
+        <div class="sign-img">${signImg(c.assinaturaTestemunha)}</div>
+        <div class="sign-line">TESTEMUNHA<br>Nome: ${t? esc(t.nome) : '_____________________'}<br>CPF: ${t? esc(t.cpf) : '_____________________'}</div>
+      </div>
+    </div>
+
+    ${c.fotoVendedor ? `
+    <div class="doc-photo">
+      <img src="${c.fotoVendedor}">
+      <span>Foto do vendedor registrada em ${esc(dataBR)}</span>
+    </div>` : ''}
+  `;
+}
+</script>
+</body>
+</html>
